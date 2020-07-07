@@ -86,17 +86,24 @@
         align-items: center;
         .el-select{
           width: 120px;
-          &.termSelect{
-            width: 200px;
-          }
         }
       }
     }
     .filter-label{
       display: flex;
-      align-items: center;
+      align-items: flex-start;
+      &-menu{
+        padding-right: 100px;
+        width: 100%;
+        &.hiddenMenu {
+          height: 41px;
+          overflow: hidden;
+        }
+      }
       >span{
         width: 80px;
+        flex-shrink: 0;
+        margin-top: 12px;
       }
       .el-button{
         margin-right: 20px;
