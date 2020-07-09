@@ -4,6 +4,7 @@
     :visible.sync="isShow"
     width="1000px"
     class="size-nomal-dialog"
+    :close-on-click-modal="closClickModal"
     :before-close="handleClose"
     top="0"
     @open="openExamDialog"
@@ -56,7 +57,7 @@
             label="学科"
             :prop="'bankAnnexList.' + index + '.subjectId'"
             :rules="{
-              required: true, message: '学科不能为空', trigger: 'change'
+              required: true, message: '学科不能为空', trigger: ['blur', 'change']
             }"
           >
             <el-select v-model="item.subjectId" placeholder="" @change="(val) => getSubjectById(val,index)">
@@ -69,10 +70,10 @@
             label="资源"
             :prop="'bankAnnexList.' + index + '.bankAnnexName'"
             :rules="{
-              required: true, message: '资源不能为空', trigger: 'blur'
+              required: true, message: '资源不能为空', trigger: ['blur', 'change']
             }"
           >
-            <el-input v-model="item.bankAnnexName" class="fileUpInput" /><el-upload
+            <el-input v-model="item.bankAnnexName" class="fileUpInput" @input="changeBankAnnexName(item.bankAnnexId, index)" /><el-upload
               class="upload-demo"
               action=""
               :file-list="fileList"
@@ -98,6 +99,9 @@
         <el-col :span="9" :offset="13">
           <div class="progress">
             <span :style="{width: progress + '%'}" />
+          </div>
+          <div class="error">
+            <span class="red">{{ error }}</span>
           </div>
         </el-col>
       </el-row>
@@ -165,22 +169,24 @@ export default {
       },
       rules: {
         academicYear: [
-          { required: true, message: '请选择学年', trigger: 'change' }
+          { required: true, message: '请选择学年', trigger: ['blur', 'change'] }
         ],
         semesterId: [
-          { required: true, message: '请选择学期', trigger: 'change' }
+          { required: true, message: '请选择学期', trigger: ['blur', 'change'] }
         ],
         gradeId: [
-          { required: true, message: '请选择年级', trigger: 'change' }
+          { required: true, message: '请选择年级', trigger: ['blur', 'change'] }
         ],
         testId: [
-          { required: true, message: '请选择考试', trigger: 'change' }
+          { required: true, message: '请选择考试', trigger: ['blur', 'change'] }
         ]
       },
       fileObj: '',
       progress: 0,
+      error: '',
       currentIndex: '',
-      examId: ''
+      examId: '',
+      closClickModal: false
     }
   },
   watch: {
@@ -192,6 +198,11 @@ export default {
     this.isShow = this.dialogVisible
   },
   methods: {
+    changeBankAnnexName (id, index) {
+      if (id === '') {
+        this.form.bankAnnexList[index].bankAnnexName = ''
+      }
+    },
     openExamDialog () {
       if (!this.isModify) {
         this.$nextTick(() => {
@@ -211,6 +222,9 @@ export default {
         editExamById({ id: this.editExamId }).then(res => {
           this.subjectList = res.subjectList
           this.semesterList = res.semesterList
+          this.academicYearList = res.academicYearList
+          this.gradeList = res.gradeList
+          this.testList = res.testList
           for (const annex of res.bankAnnexList) {
             annex.createdDate = ''
           }
@@ -239,7 +253,7 @@ export default {
     fileUpLoad (file, index) {
       const formData = new FormData()
       formData.append('file', this.fileObj)
-      formData.append('dir', 'exam')
+      formData.append('storageDir', 'exam')
       axios.post('/api-base/attachments/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -257,6 +271,8 @@ export default {
       }).then(res => {
         // 上传成功回调
         file.onSuccess(res, file)
+      }).catch(err => {
+        this.error = err
       })
     },
     uploadProgress (event, file) {
@@ -323,7 +339,7 @@ export default {
       this.form.bankAnnexList.push(item)
     },
     handleClose (done) {
-      this.$refs.examForm.clearValidate()
+      // this.$refs.examForm.clearValidate()
       this.resetForm()
       done()
       this.$emit('dialogClose')

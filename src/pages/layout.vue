@@ -13,31 +13,43 @@
       <user />
     </div>
     <div class="filter-nav test-bank-section">
-      <div class="filter-label">
+      <div ref="gradeMenu" class="filter-label">
         <span>年级</span>
-        <div>
+        <div class="filter-label-menu" :class="gradeOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="gradeActive === 0 ? 'active': ''" @click="selectFilter('grade', 0, 0)">全部</el-button>
           <el-button v-for="(item, index) in gradeList" :key="index" type="text" :class="gradeActive === index+1 ? 'active': ''" @click="selectFilter('grade', item.id, index +1)">
             {{ item.name }}
           </el-button>
         </div>
+        <div v-if="gradeMenuShow" class="filter-label-btn">
+          <el-button v-if="gradeMenuShow && gradeOpen" type="text" @click="openMenu('grade')">展开<i class="el-icon-arrow-down" /></el-button>
+          <el-button v-if="gradeMenuShow && !gradeOpen" type="text" @click="closeMenu('grade')">收起<i class="el-icon-arrow-up" /></el-button>
+        </div>
       </div>
-      <div class="filter-label">
+      <div ref="subjectMenu" class="filter-label">
         <span>学科</span>
-        <div>
+        <div class="filter-label-menu" :class="subjectOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="subjectActive === 0 ? 'active': ''" @click="selectFilter('subject', 0, 0)">全部</el-button>
           <el-button v-for="(item, index) in subjectList" :key="index" type="text" :class="subjectActive === index+1 ? 'active': ''" @click="selectFilter('subject',item.id, index +1)">
             {{ item.name }}
           </el-button>
         </div>
+        <div v-if="subjectMenuShow" class="filter-label-btn">
+          <el-button v-if="subjectMenuShow && subjectOpen" type="text" @click="openMenu('subject')">展开<i class="el-icon-arrow-down" /></el-button>
+          <el-button v-if="subjectMenuShow && !subjectOpen" type="text" @click="closeMenu('subject')">收起<i class="el-icon-arrow-up" /></el-button>
+        </div>
       </div>
-      <div class="filter-label">
+      <div ref="typeMenu" class="filter-label">
         <span>类型</span>
-        <div>
+        <div class="filter-label-menu" :class="typeOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="typeActive === 0 ? 'active': ''" @click="selectFilter('type',0, 0)">全部</el-button>
           <el-button v-for="(item, index) in testList" :key="index" type="text" :class="typeActive === index+1 ? 'active': ''" @click="selectFilter('type',item.id, index +1)">
             {{ item.name }}
           </el-button>
+        </div>
+        <div v-if="typeMenuShow" class="filter-label-btn">
+          <el-button v-if="typeMenuShow && typeOpen" type="text" @click="openMenu('type')">展开<i class="el-icon-arrow-down" /></el-button>
+          <el-button v-if="typeMenuShow && !typeOpen" type="text" @click="closeMenu('type')">收起<i class="el-icon-arrow-up" /></el-button>
         </div>
       </div>
     </div>
@@ -118,15 +130,12 @@
       :edit-exam-id="editExamId"
       :is-modify="isModify"
       :dialog-visible="dialogVisible"
-      :academic-year-list="academicYearList"
-      :grade-list="gradeList"
-      :test-list="testList"
       @dialogClose="closeNewExamDialog"
     />
   </section>
 </template>
 <script>
-import { delTestById, loadBatchByIds, getListByParams, getSearchList, getSemesterByYearId } from '@/api/index'
+import { delTestById, loadBatchByIds, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId } from '@/api/index'
 import { arrayToStrWithOutComma, downloadFile } from '../util/index'
 import user from '@/component/user'
 import logo from '@/component/logo'
@@ -170,7 +179,13 @@ export default {
         id: 2
       }],
       editExamId: '',
-      isModify: false
+      isModify: false,
+      gradeMenuShow: false,
+      subjectMenuShow: false,
+      typeMenuShow: false,
+      gradeOpen: '',
+      subjectOpen: '',
+      typeOpen: ''
     }
   },
   watch: {
@@ -209,9 +224,37 @@ export default {
         id: '0'
       })
       this.year = '0'
+      //  判断菜单的展开 是否显示
+      this.$nextTick(function () {
+        this.initMenuBtns()
+      })
     })
   },
   methods: {
+    initMenuBtns () {
+      // 获取年级菜单的高度
+      const gradeHeight = this.$refs.gradeMenu.clientHeight
+      const subjectHeight = this.$refs.subjectMenu.clientHeight
+      const typeHeight = this.$refs.typeMenu.clientHeight
+      if (gradeHeight > 40) {
+        this.gradeMenuShow = true
+        this.gradeOpen = true
+      }
+      if (subjectHeight > 40) {
+        this.subjectMenuShow = true
+        this.subjectOpen = true
+      }
+      if (typeHeight > 40) {
+        this.typeMenuShow = true
+        this.typeOpen = true
+      }
+    },
+    openMenu (command) {
+      this[command + 'Open'] = false
+    },
+    closeMenu (command) {
+      this[command + 'Open'] = true
+    },
     closeNewExamDialog () {
       this.dialogVisible = false
       this.fetchList()
@@ -228,6 +271,16 @@ export default {
       })
     },
     selectFilter (role, id, index) {
+      if (role === 'grade') {
+        // 查询学科
+        getSubjectByGradeId({ gradeId: id }).then(res => {
+          this.subjectList = res
+          this.subject = 0
+          this.type = 0
+          this.subjectActive = 0
+          this.typeActive = 0
+        })
+      }
       this[role + 'Active'] = index
       this[role] = id
       this.searchList()
