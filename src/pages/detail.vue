@@ -25,7 +25,7 @@
       </div>
       <div class="test-bank-section">
         <div class=" bank-item-container">
-          <div v-for="(item, index) in bankInfo.bankAnnexList" :key="index" class="bank-item" @click="viewFile(item.id)">
+          <div v-for="(item, index) in bankInfo.bankAnnexList" :key="index" class="bank-item" @click="viewFile(item.bankAnnexId, item.contentType)">
             <div style="padding-bottom: 24px;">
               <div>
                 <img v-if="item.contentType === 'video'" src="../assets/video.png" alt="">
@@ -56,10 +56,10 @@
 </template>
 <script>
 // import json2 from '@/json/json2.json'
-import { getBankInfoById, loadDetailBatchByIds } from '@/api/index'
+import { getBankInfoById, loadDetailBatchByIdsEx } from '@/api/index'
 import logo from '@/component/logo'
 import user from '@/component/user'
-import { arrayToStrWithOutComma, downloadFile } from '../util/index'
+import { arrayToStrWithOutComma } from '../util/index'
 
 export default {
   components: { user, logo },
@@ -90,12 +90,16 @@ export default {
   },
   mounted () {
     getBankInfoById({ id: this.id }).then(res => {
+      for (const item of res.bankAnnexList) {
+        item.checked = false
+      }
       this.bankInfo = res
     })
     this.getListById()
   },
   methods: {
     loadBatchByIds () {
+      this.checkedListArr = []
       for (const item of this.bankInfo.bankAnnexList) {
         if (item.checked) {
           this.checkedListArr.push(item.bankAnnexId)
@@ -108,16 +112,18 @@ export default {
           message: '未选中附件'
         })
       } else {
-        loadDetailBatchByIds({ bankAnnexIds: ids }).then(res => {
-          downloadFile(res, '')
+        loadDetailBatchByIdsEx({ idList: ids }).then(res => {
+          for (const item of res) {
+            window.open(item.url, '_blank')
+          }
         })
       }
     },
     getListById (id) {
       // this.list = json2
     },
-    viewFile (url) {
-      const { href } = this.$router.resolve({ name: 'view', params: { url: url } })
+    viewFile (url, contentType) {
+      const { href } = this.$router.resolve({ name: 'view', params: { url: url, contentType: contentType } })
       window.open(href, '_blank')
     }
   }

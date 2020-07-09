@@ -17,6 +17,7 @@ export default {
   mounted () {
     getUserInfo().then(res => {
       this.user = res
+      window.localStorage.setItem('user', this.user)
     })
   }
 }
