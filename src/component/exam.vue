@@ -113,8 +113,12 @@
   </el-dialog>
 </template>
 <script>
-import { getSemesterByYearId, getSubjectByGradeId, createExam, editExamById, editExam } from '@/api/index'
-import { axios } from '@xcedu/web-share'
+import { getSemesterByYearId, getSubjectByGradeId, createExam, editExamById, editExam, uploadResource } from '@/api/index'
+import OSS from 'ali-oss'
+import { v4 as uuidv4 } from 'uuid'
+
+let PATH = null
+
 export default {
   props: {
     isModify: {
@@ -132,6 +136,7 @@ export default {
   },
   data () {
     return {
+      client: null,
       fileList: [],
       isShow: false,
       academicYearList: [], // 学年
@@ -164,7 +169,8 @@ export default {
           bankAnnexName: '',
           subjectId: '',
           subjectName: '',
-          bankAnnexId: ''
+          bankAnnexId: '',
+          contentType: ''
         }]
       },
       rules: {
@@ -251,25 +257,26 @@ export default {
       this.form.bankAnnexList[index].bankAnnexName = file.name
     },
     fileUpLoad (file, index) {
-      const formData = new FormData()
-      formData.append('file', this.fileObj)
-      formData.append('storageDir', 'exam')
-      axios.post('/api-base/attachments/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        transformRequest: [function transformRequest (formData) {
-          return formData
-        }],
-        onUploadProgress: function (progressEvent) {
-          if (progressEvent.lengthComputable) {
-            const progress = parseInt((progressEvent.loaded / progressEvent.total) * 100).toFixed(0)
-            // 上传进度回调
-            file.onProgress({ percent: progress })
+      if (!PATH) {
+        PATH = window.localStorage.getItem('user') && window.localStorage.getItem('user').domainId + '/exam/'
+      }
+      if (!this.client) {
+        this.client = new OSS({
+          region: 'oss-cn-shenzhen',
+          accessKeyId: 'LTAI4G2nbEWcDi9djnDY8tvJ',
+          accessKeySecret: 'ZZN02tVv7BpJEhc5bWa2NlNIdL6Vvp',
+          bucket: 'gtyzfile'
+        })
+      }
+      const fileName = uuidv4().replace(/-/g, '') + this.fileObj.name.substring(this.fileObj.name.lastIndexOf('.'))
+      return this.client.multipartUpload(PATH + fileName, this.fileObj, {
+        progress: function (p) {
+          return function (done) {
+            file.onProgress({ percent: p * 100 })
+            done()
           }
         }
-      }).then(res => {
-        // 上传成功回调
+      }).then(function (res) {
         file.onSuccess(res, file)
       }).catch(err => {
         this.error = err
@@ -284,7 +291,26 @@ export default {
       }, 100)
     },
     uploadOnSuccess (res, file) {
-      this.form.bankAnnexList[this.currentIndex].bankAnnexId = res.id
+      if (!res) {
+        return
+      }
+      window.console.log(res, file)
+      const fileUuid = res.name.substring(res.name.lastIndexOf('/')).replace('/', '').replace(/\..*/, '')
+      this.form.bankAnnexList[this.currentIndex].bankAnnexId = fileUuid
+      uploadResource({
+        // contentType: 'string',
+        displayName: file.name,
+        // fileName: 'string',
+        fileSize: file.size,
+        id: fileUuid,
+        // link2: res.res.requestUrls[0],
+        relativePath: PATH
+        // suffixName: '.mp4'
+        // uploadIp: 'string'
+      }).then(res2 => {
+        window.console.log(res2)
+        this.form.bankAnnexList[this.currentIndex].contentType = res2.contentType
+      })
     },
     getSubjectById (val, index) {
       for (const i of this.subjectList) {
@@ -323,7 +349,7 @@ export default {
       }
     },
     getTermById () {
-      for (const i of this.termList) {
+      for (const i of this.semesterList) {
         if (i.id === this.form.semesterId) {
           this.form.semesterName = i.name
         }
@@ -334,7 +360,8 @@ export default {
         bankAnnexName: '',
         subjectId: '',
         subjectName: '',
-        bankAnnexId: ''
+        bankAnnexId: '',
+        contentType: ''
       }
       this.form.bankAnnexList.push(item)
     },
@@ -358,7 +385,8 @@ export default {
           bankAnnexName: '',
           subjectId: '',
           subjectName: '',
-          bankAnnexId: ''
+          bankAnnexId: '',
+          contentType: ''
         }]
       }
     },

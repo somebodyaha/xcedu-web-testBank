@@ -135,8 +135,8 @@
   </section>
 </template>
 <script>
-import { delTestById, loadBatchByIds, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId } from '@/api/index'
-import { arrayToStrWithOutComma, downloadFile } from '../util/index'
+import { delTestById, loadBatchByIdsEx, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId } from '@/api/index'
+import { arrayToStrWithOutComma } from '../util/index'
 import user from '@/component/user'
 import logo from '@/component/logo'
 import newExam from '@/component/exam.vue'
@@ -299,8 +299,10 @@ export default {
           message: '未选中考试'
         })
       } else {
-        loadBatchByIds({ ids: ids }).then(res => {
-          downloadFile(res, '')
+        loadBatchByIdsEx({ ids: ids }).then(res => {
+          for (const item of res) {
+            window.open(item.url, '_blank')
+          }
         })
       }
     },
