@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <div v-show="canPreview" :class="isfullScreen ? 'fullScreen' : ''">
+  <div style="height: 100%;">
+    <div v-show="canPreview" :class="isfullScreen ? 'fullScreen' : ''" style="height: 100%;">
       <div v-if="contentType == 'video'" class="containerborder">
         <video id="video" :src="previewLink" controls="controls" style="height: 100vh; width: 100%;">
           您的浏览器不支持 video 标签。
@@ -25,10 +25,10 @@
       <div
         v-else-if="contentType == 'image'"
         id="img"
-        class="imgContainer"
-        style="overflow: auto; width: 100%;  "
+        class="imgContainer tx-c"
+        style="overflow: auto; width: 100%; height: 100%;"
       >
-        <img style="width:100%;" :src="previewLink">
+        <img style="" :src="previewLink">
       </div>
       <iframe v-else id="iframeView" :src="previewLink" style="width: 100%; height: 100vh; border: 0 none;" frameborder="0" />
       <!--<div class="loadDiv">

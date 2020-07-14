@@ -13,7 +13,7 @@
             <img v-if="bankInfo.testType === 2" src="../assets/li.png" alt="" style="height: 65px; margin-right: 20px">
             <div>
               <div class="size-large-xx padding-bottom-size-mix">{{ bankInfo.bankName }}</div>
-              <div class="padding-bottom-size-mix"><span class="color">{{ bankInfo.gradeName }}</span><span class="margin-left-size-nomal">{{ bankInfo.testName }}</span></div>
+              <div class="padding-bottom-size-mix"><span class="color">[{{ bankInfo.gradeName }}]</span><span class="margin-left-size-nomal">{{ bankInfo.testName }}</span></div>
               <div class="text-color-grey">{{ bankInfo.createdDate }}</div>
             </div>
           </el-col>
@@ -29,22 +29,23 @@
             <div style="padding-bottom: 24px;">
               <div>
                 <img v-if="item.contentType === 'video'" src="../assets/video.png" alt="">
-                <img v-if="item.contentType === 'pdf'" src="../assets/pdf.png" alt="">
-                <img v-if="item.contentType === 'ppt'" src="../assets/ppt.png" alt="">
-                <img v-if="item.contentType === 'word'" src="../assets/word.png" alt="">
-                <img v-if="item.contentType === 'excel'" src="../assets/excel.png" alt="">
-                <img v-if="item.contentType === 'audio'" src="../assets/video.png" alt="">
-                <img v-if="item.contentType === 'zip'" src="../assets/zip.png" alt="">
-                <img v-if="item.contentType === 'rar'" src="../assets/rar.png" alt="">
-                <img v-if="item.contentType === 'text'" src="../assets/txt.png" alt="">
-                <img v-if="item.contentType === 'unknown'" src="../assets/unknown.png" alt="">
+                <img v-else-if="item.contentType === 'pdf'" src="../assets/pdf.png" alt="">
+                <img v-else-if="item.contentType === 'ppt'" src="../assets/ppt.png" alt="">
+                <img v-else-if="item.contentType === 'word'" src="../assets/word.png" alt="">
+                <img v-else-if="item.contentType === 'excel'" src="../assets/excel.png" alt="">
+                <img v-else-if="item.contentType === 'audio'" src="../assets/mp3.png" alt="">
+                <img v-else-if="item.contentType === 'zip'" src="../assets/zip.png" alt="">
+                <img v-else-if="item.contentType === 'rar'" src="../assets/rar.png" alt="">
+                <img v-else-if="item.contentType === 'text'" src="../assets/txt.png" alt="">
+                <img v-else-if="item.contentType === 'image'" src="../assets/image.png" alt="">
+                <img v-else-if="item.contentType === 'unknown'" src="../assets/unknown.png" alt="">
                 <div>
-                  <strong>{{ item.bankAnnexName }}</strong>
+                  <strong :title="item.bankAnnexName">{{ item.bankAnnexName }}</strong>
                   <el-checkbox v-model="item.checked" @click.stop.native="" />
                   <p>
                     <span class="color">{{ item.subjectName }}</span>
+                    <em class="text-color-grey">{{ item.createdDate }}</em>
                   </p>
-                  <em class="text-color-grey">{{ item.createdDate }}</em>
                 </div>
               </div>
             </div>
@@ -59,7 +60,7 @@
 import { getBankInfoById, loadDetailBatchByIdsEx } from '@/api/index'
 import logo from '@/component/logo'
 import user from '@/component/user'
-import { arrayToStrWithOutComma } from '../util/index'
+import { arrayToStrWithOutComma, downloadAttachment } from '../util/index'
 
 export default {
   components: { user, logo },
@@ -114,7 +115,9 @@ export default {
       } else {
         loadDetailBatchByIdsEx({ idList: ids }).then(res => {
           for (const item of res) {
-            window.open(item.url, '_blank')
+            // window.open(item.url, '_blank')
+            // window.open(item.url + '?response-content-disposition=attachment; filename="' + item.displayName + '"', '_blank')
+            downloadAttachment(item.url, item.displayName)
           }
         })
       }

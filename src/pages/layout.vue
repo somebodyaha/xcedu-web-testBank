@@ -3,7 +3,7 @@
     <div class="app-testBank-header">
       <div class="app-testBank-header-input">
         <logo />
-        <el-input v-model="bankName" placeholder="请输入内容">
+        <el-input v-model="bankName" placeholder="资源标题" @keyup.native.enter="fetchList">
           <template slot="append">
             <el-button type="primary" @click="fetchList">搜索</el-button>
           </template>
@@ -92,39 +92,45 @@
       </el-row>
     </div>
     <div class="test-bank-section" style="background: none; padding-left: 0; padding-right: 0; margin-left: 45px; margin-right: 45px; padding-top: 0; margin-top: 5px;">
-      <div class=" bank-item-container">
-        <div v-for="(item, index) in list" :key="index" class="bank-item">
-          <div @click="getTestBankById(item.id)">
-            <div>
-              <img v-if="item.testType === 0" src="../assets/fold.png" alt="">
-              <img v-if="item.testType === 1" src="../assets/wen.png" alt="">
-              <img v-if="item.testType === 2" src="../assets/li.png" alt="">
+      <template v-if="list.length">
+        <div class=" bank-item-container">
+          <div v-for="(item, index) in list" :key="index" class="bank-item">
+            <div @click="getTestBankById(item.id)">
               <div>
-                <strong>{{ item.bankName }}</strong>
-                <el-checkbox v-model="item.checked" @click.stop.native="" />
-                <p>
-                  <span class="color">{{ item.gradeName }}</span>
-                  <span>{{ item.testName }}</span>
-                </p>
-                <em>{{ item.createdDate }}</em>
+                <img v-if="item.testType === 0" src="../assets/fold.png" alt="">
+                <img v-if="item.testType === 1" src="../assets/wen.png" alt="">
+                <img v-if="item.testType === 2" src="../assets/li.png" alt="">
+                <div>
+                  <strong>{{ item.bankName }}</strong>
+                  <el-checkbox v-model="item.checked" @click.stop.native="" />
+                  <p>
+                    <span class="color">{{ item.gradeName }}</span>
+                    <span>{{ item.testName }}</span>
+                  </p>
+                  <em>{{ item.createdDate }}</em>
+                </div>
               </div>
-            </div>
-            <div class="item-btn-groups">
-              <el-button type="text"><i class="icon-edit" @click.stop="edit(item.id)" /></el-button>
-              <el-button type="text"><i class="icon-delete" @click.stop="del(item.id)" /></el-button>
+              <div class="item-btn-groups">
+                <el-button type="text"><i class="icon-edit" @click.stop="edit(item.id)" /></el-button>
+                <el-button type="text"><i class="icon-delete" @click.stop="del(item.id)" /></el-button>
+              </div>
             </div>
           </div>
         </div>
+        <el-pagination
+          :page-size="pageSize"
+          :page-sizes="[8, 12, 16, 20]"
+          background
+          layout="prev, pager, next, jumper, sizes, total"
+          :total="total"
+          class="tx-c margin-top-size-nomal padding-bottom-size-nomal"
+          @current-change="searchList"
+          @size-change="pageSizeChange"
+        />
+      </template>
+      <div v-else class="tx-c">
+        <img src="../assets/noMsg.png">
       </div>
-      <el-pagination
-        :page-size="pageSize"
-        background
-        layout="prev, pager, next, jumper, sizes, total"
-        :total="total"
-        class="tx-c margin-top-size-nomal padding-bottom-size-nomal"
-        @current-change="searchList"
-        @size-change="pageSizeChange"
-      />
     </div>
     <newExam
       :edit-exam-id="editExamId"
@@ -136,7 +142,7 @@
 </template>
 <script>
 import { delTestById, loadBatchByIdsEx, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId } from '@/api/index'
-import { arrayToStrWithOutComma } from '../util/index'
+import { arrayToStrWithOutComma, downloadAttachment } from '../util/index'
 import user from '@/component/user'
 import logo from '@/component/logo'
 import newExam from '@/component/exam.vue'
@@ -159,7 +165,7 @@ export default {
       checkAll: false,
       total: 0,
       page: 1,
-      pageSize: 10,
+      pageSize: 12,
       dialogVisible: false,
       checkedListArr: [],
       testList: [],
@@ -202,7 +208,7 @@ export default {
     }
   },
   beforeRouteEnter (to, from, next) {
-    window.localStorage.setItem('DirectHost', '192.168.20.144')
+    // window.localStorage.setItem('DirectHost', '192.168.20.144')
     const tokenParams = window.location.search.replace(/\?.*token=(.+)(&.*|#.*)?$/, (w, l) => l)
     const token = tokenParams.split('&')[0]
     if (token) {
@@ -301,7 +307,8 @@ export default {
       } else {
         loadBatchByIdsEx({ ids: ids }).then(res => {
           for (const item of res) {
-            window.open(item.url, '_blank')
+            // window.open(item.url, '_blank')
+            downloadAttachment(item.url, item.displayName)
           }
         })
       }

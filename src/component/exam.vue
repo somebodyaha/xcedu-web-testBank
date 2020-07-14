@@ -20,7 +20,7 @@
         </el-col>
         <el-col :span="11">
           <el-form-item label="学期" prop="semesterId">
-            <el-select v-model="form.semesterId " @change="getTermById">
+            <el-select v-model="form.semesterId">
               <el-option v-for="option in semesterList" :key="option.id" :label="option.name" :value="option.id" />
             </el-select>
           </el-form-item>
@@ -36,7 +36,7 @@
         </el-col>
         <el-col :span="11">
           <el-form-item label="考试" prop="testId">
-            <el-select v-model="form.testId " @change="setTestName">
+            <el-select v-model="form.testId">
               <el-option v-for="option in testList" :key="option.id" :label="option.name" :value="option.id" />
             </el-select>
           </el-form-item>
@@ -45,8 +45,8 @@
       <el-row>
         <el-col :span="11">
           <el-form-item label="文理" prop="testType">
-            <el-select v-model="form.testType " placeholder="请选择">
-              <el-option v-for="(type, index) in typeList" :key="index" :label="type.name" :value="type.id" />
+            <el-select v-model="form.testType" placeholder="请选择">
+              <el-option v-for="type in typeList" :key="type.id" :label="type.name" :value="type.id" />
             </el-select>
           </el-form-item>
         </el-col>
@@ -60,7 +60,7 @@
               required: true, message: '学科不能为空', trigger: ['blur', 'change']
             }"
           >
-            <el-select v-model="item.subjectId" placeholder="" @change="(val) => getSubjectById(val,index)">
+            <el-select v-model="item.subjectId" placeholder="">
               <el-option v-for="option in subjectList" :key="option.id" :label="option.name" :value="option.id" />
             </el-select>
           </el-form-item>
@@ -73,31 +73,36 @@
               required: true, message: '资源不能为空', trigger: ['blur', 'change']
             }"
           >
-            <el-input v-model="item.bankAnnexName" class="fileUpInput" @input="changeBankAnnexName(item.bankAnnexId, index)" /><el-upload
-              class="upload-demo"
-              action=""
-              :file-list="fileList"
-              :show-file-list="false"
-              :before-upload="(file) => beforeUpload(file, index)"
-              :http-request="(file) => fileUpLoad(file,index)"
-              :on-change="fileChange"
-              :on-progress="uploadProgress"
-              :on-success="uploadOnSuccess"
-            >
-              <el-button type="primary">上传</el-button>
-            </el-upload>
+            <el-input v-model="item.bankAnnexName" class="fileUpInput" readonly @input="changeBankAnnexName(item.bankAnnexId, index)">
+              <el-upload
+                slot="append"
+                action=""
+                :file-list="fileList"
+                :show-file-list="false"
+                :before-upload="(file) => beforeUpload(file, index)"
+                :http-request="(file) => fileUpLoad(file,index)"
+                :on-change="fileChange"
+                :on-progress="uploadProgress"
+                :on-success="uploadOnSuccess"
+              >
+                <el-button type="primary">上传</el-button>
+              </el-upload>
+            </el-input>
           </el-form-item>
         </el-col>
         <el-col :span="2">
-          <div class="margin-small">
-            <i v-if="index === (form.bankAnnexList.length -1) " class="icon icon-add-solid-o blue pointer  margin-right-size-mix" @click="addSuject" />
-            <i v-if="index !== (form.bankAnnexList.length -1)" class="icon icon-minus-solid-o red pointer" @click="delSubject(index)" />
+          <div class="margin-left-size-small margin-top-size-mix">
+            <i class="icon icon-add-solid-o blue pointer size-large-xx margin-right-size-mix" @click="addSuject(index)" />
+            <i class="icon icon-minus-solid-o red pointer size-large-xx" @click="delSubject(index)" />
           </div>
         </el-col>
       </el-row>
       <el-row>
         <el-col :span="9" :offset="13">
-          <div class="progress">
+          <div>
+            <span class="text-color-grey">.ppt .pptx .pdf .doc .docx .mp3 .mp4等格式文件</span>
+          </div>
+          <div v-if="progress" class="progress">
             <span :style="{width: progress + '%'}" />
           </div>
           <div class="error">
@@ -154,7 +159,6 @@ export default {
         id: 2
       }],
       subjectList: [],
-
       form: {
         academicYear: '',
         academicYearName: '',
@@ -253,12 +257,21 @@ export default {
       this.fileObj = file.raw
     },
     beforeUpload (file, index) {
+      if (file.name.indexOf('.') === -1) {
+        this.$message.error('禁止上传无格式的文件！')
+        return false
+      }
+      const extName = file.name.substring(file.name.lastIndexOf('.'))
+      if (['.exe', '.cmd', '.bat', '.sh'].indexOf(extName) !== -1) {
+        this.$message.error('禁止上传.exe, .cmd, .bat, .sh格式的文件！')
+        return false
+      }
       this.currentIndex = index
-      this.form.bankAnnexList[index].bankAnnexName = file.name
     },
     fileUpLoad (file, index) {
       if (!PATH) {
-        PATH = window.localStorage.getItem('user') && window.localStorage.getItem('user').domainId + '/exam/'
+        const userStr = window.localStorage.getItem('user')
+        PATH = userStr && JSON.parse(userStr).domainId + '/exam/'
       }
       if (!this.client) {
         this.client = new OSS({
@@ -285,7 +298,7 @@ export default {
     uploadProgress (event, file) {
       this.progress = event.percent
       setTimeout(() => {
-        if (event.percent === '100') {
+        if (event.percent === 100) {
           this.progress = 0
         }
       }, 100)
@@ -294,9 +307,7 @@ export default {
       if (!res) {
         return
       }
-      window.console.log(res, file)
       const fileUuid = res.name.substring(res.name.lastIndexOf('/')).replace('/', '').replace(/\..*/, '')
-      this.form.bankAnnexList[this.currentIndex].bankAnnexId = fileUuid
       uploadResource({
         // contentType: 'string',
         displayName: file.name,
@@ -308,54 +319,27 @@ export default {
         // suffixName: '.mp4'
         // uploadIp: 'string'
       }).then(res2 => {
-        window.console.log(res2)
+        this.form.bankAnnexList[this.currentIndex].bankAnnexId = res2.id
         this.form.bankAnnexList[this.currentIndex].contentType = res2.contentType
+        this.form.bankAnnexList[this.currentIndex].bankAnnexName = res2.displayName
       })
     },
-    getSubjectById (val, index) {
-      for (const i of this.subjectList) {
-        if (i.id === val) {
-          this.form.bankAnnexList[index].subjectName = i.name
-        }
+    getSubjectByGradeId (val) {
+      for (const item of this.form.bankAnnexList) {
+        item.subjectId = ''
       }
-    },
-    getSubjectByGradeId () {
-      getSubjectByGradeId({ gradeId: this.form.gradeId }).then(res => {
+      getSubjectByGradeId({ gradeId: val }).then(res => {
         this.subjectList = res
       })
-      for (const i of this.gradeList) {
-        if (i.id === this.form.gradeId) {
-          this.form.gradeName = i.name
-        }
-      }
     },
-    setTestName () {
-      for (const i of this.testList) {
-        if (i.id === this.form.testId) {
-          this.form.testName = i.name
-        }
-      }
-    },
-    getSemesterByYear () {
-      getSemesterByYearId({ academicYear: this.form.academicYear }).then(res => {
+    getSemesterByYear (val) {
+      this.semesterList = []
+      this.form.semesterId = ''
+      getSemesterByYearId({ academicYear: val }).then(res => {
         this.semesterList = res
-        this.form.semesterId = res[0].id
-        this.form.semesterName = res[0].name
       })
-      for (const i of this.academicYearList) {
-        if (i.id === this.form.academicYear) {
-          this.form.academicYearName = i.name
-        }
-      }
     },
-    getTermById () {
-      for (const i of this.semesterList) {
-        if (i.id === this.form.semesterId) {
-          this.form.semesterName = i.name
-        }
-      }
-    },
-    addSuject () {
+    addSuject (index) {
       const item = {
         bankAnnexName: '',
         subjectId: '',
@@ -363,7 +347,14 @@ export default {
         bankAnnexId: '',
         contentType: ''
       }
-      this.form.bankAnnexList.push(item)
+      this.form.bankAnnexList.splice(index + 1, 0, item)
+    },
+    delSubject (index) {
+      if (this.form.bankAnnexList.length === 1) {
+        this.$message.error('至少需要上传一个资源')
+        return
+      }
+      this.form.bankAnnexList.splice(index, 1)
     },
     handleClose (done) {
       // this.$refs.examForm.clearValidate()
@@ -381,6 +372,7 @@ export default {
         semesterName: '',
         testId: '',
         testName: '',
+        testType: 0,
         bankAnnexList: [{
           bankAnnexName: '',
           subjectId: '',
@@ -393,6 +385,38 @@ export default {
     saveForm (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          for (const item of this.academicYearList) {
+            if (this.form.academicYear === item.id) {
+              this.form.academicYearName = item.name
+              break
+            }
+          }
+          for (const item of this.semesterList) {
+            if (this.form.semesterId === item.id) {
+              this.form.semesterName = item.name
+              break
+            }
+          }
+          for (const item of this.gradeList) {
+            if (this.form.gradeId === item.id) {
+              this.form.gradeName = item.name
+              break
+            }
+          }
+          for (const item of this.testList) {
+            if (this.form.testId === item.id) {
+              this.form.testName = item.name
+              break
+            }
+          }
+          for (const item of this.form.bankAnnexList) {
+            for (const item2 of this.subjectList) {
+              if (item.subjectId === item2.id) {
+                item.subjectName = item2.name
+                break
+              }
+            }
+          }
           if (this.isModify) {
             this.$set(this.form, 'id', this.editExamId)
             editExam(this.form).then(res => {
@@ -403,6 +427,7 @@ export default {
               this.$emit('dialogClose')
             })
           } else {
+            this.$delete(this.form, 'id')
             createExam(this.form).then(res => {
               this.$message({
                 type: 'success',
