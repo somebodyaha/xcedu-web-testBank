@@ -2,11 +2,11 @@
   <el-dialog
     title="新建考试"
     :visible.sync="isShow"
+    top="0"
     width="1000px"
     class="size-nomal-dialog"
-    :close-on-click-modal="closClickModal"
-    :before-close="handleClose"
-    top="0"
+    :close-on-click-modal="false"
+    @closed="handleClose"
     @open="openExamDialog"
   >
     <el-form ref="examForm" :model="form" label-width="80px" :rules="rules">
@@ -70,7 +70,7 @@
             label="资源"
             :prop="'bankAnnexList.' + index + '.bankAnnexName'"
             :rules="{
-              required: true, message: '资源不能为空', trigger: ['blur', 'change']
+              required: true, message: '资源不能为空', trigger: ['change']
             }"
           >
             <el-input v-model="item.bankAnnexName" class="fileUpInput" readonly @input="changeBankAnnexName(item.bankAnnexId, index)">
@@ -195,8 +195,7 @@ export default {
       progress: 0,
       error: '',
       currentIndex: '',
-      examId: '',
-      closClickModal: false
+      examId: ''
     }
   },
   watch: {
@@ -215,39 +214,34 @@ export default {
     },
     openExamDialog () {
       if (!this.isModify) {
-        this.$nextTick(() => {
-          this.$refs.examForm.resetFields()
-        })
         editExamById({ id: '' }).then(res => {
           this.academicYearList = res.academicYearList
           this.semesterList = res.semesterList
           this.gradeList = res.gradeList
           this.testList = res.testList
-        })
-      }
-      if (this.isModify) {
-        this.$nextTick(() => {
-          this.$refs.examForm.resetFields()
-        })
-        editExamById({ id: this.editExamId }).then(res => {
           this.subjectList = res.subjectList
-          this.semesterList = res.semesterList
+        })
+      } else {
+        editExamById({ id: this.editExamId }).then(res => {
           this.academicYearList = res.academicYearList
+          this.semesterList = res.semesterList
           this.gradeList = res.gradeList
           this.testList = res.testList
+          this.subjectList = res.subjectList
           for (const annex of res.bankAnnexList) {
             annex.createdDate = ''
           }
           this.$nextTick(function () {
-            this.form.bankAnnexList = res.bankAnnexList
             this.form.academicYear = res.academicYear
             this.form.academicYearName = res.academicYearName
             this.form.gradeId = res.gradeId
             this.form.gradeName = res.gradeName
-            this.form.testId = res.testId
-            this.form.semesterName = res.semesterName
-            this.form.testType = res.testType
             this.form.semesterId = res.semesterId
+            this.form.semesterName = res.semesterName
+            this.form.testId = res.testId
+            this.form.testName = res.testName
+            this.form.testType = res.testType
+            this.form.bankAnnexList = res.bankAnnexList
           })
         })
       }
@@ -328,6 +322,14 @@ export default {
       for (const item of this.form.bankAnnexList) {
         item.subjectId = ''
       }
+      // 切换了年级，下面的学科被置空后不需要校验提示
+      this.$nextTick(function () {
+        const props = []
+        for (let i = 0; i < this.form.bankAnnexList.length; i++) {
+          props.push('bankAnnexList.' + i + '.subjectId')
+        }
+        this.$refs.examForm.clearValidate(props)
+      })
       getSubjectByGradeId({ gradeId: val }).then(res => {
         this.subjectList = res
       })
@@ -356,10 +358,8 @@ export default {
       }
       this.form.bankAnnexList.splice(index, 1)
     },
-    handleClose (done) {
-      // this.$refs.examForm.clearValidate()
+    handleClose () {
       this.resetForm()
-      done()
       this.$emit('dialogClose')
     },
     resetForm () {
@@ -381,6 +381,9 @@ export default {
           contentType: ''
         }]
       }
+      this.$nextTick(() => {
+        this.$refs.examForm.clearValidate()
+      })
     },
     saveForm (formName) {
       this.$refs[formName].validate((valid) => {
@@ -424,7 +427,7 @@ export default {
                 type: 'success',
                 message: '编辑成功'
               })
-              this.$emit('dialogClose')
+              this.isShow = false
             })
           } else {
             this.$delete(this.form, 'id')
@@ -433,12 +436,9 @@ export default {
                 type: 'success',
                 message: '保存成功'
               })
-              // this.$refs.examForm.clearValidate()
-              this.$emit('dialogClose')
+              this.isShow = false
             })
           }
-        } else {
-          return false
         }
       })
     }

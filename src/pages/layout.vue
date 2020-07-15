@@ -3,12 +3,12 @@
     <div class="app-testBank-header">
       <div class="app-testBank-header-input">
         <logo />
-        <el-input v-model="bankName" placeholder="资源标题" @keyup.native.enter="fetchList">
+        <el-input v-model="bankName" placeholder="资源标题" @keyup.native.enter="searchList">
           <template slot="append">
-            <el-button type="primary" @click="fetchList">搜索</el-button>
+            <el-button type="primary" @click="searchList">搜索</el-button>
           </template>
         </el-input>
-        <el-button type="primary" @click="newExam">新建考试</el-button>
+        <el-button type="success" @click="newExam">新建考试</el-button>
       </div>
       <user />
     </div>
@@ -64,7 +64,7 @@
           </div>
           <div class="test-bank-section--filter--item">
             <span>学期</span>
-            <el-select v-model="term" value-key="id" class="termSelect" @change="fetchList">
+            <el-select v-model="term" value-key="id" class="termSelect" @change="searchList">
               <el-option
                 v-for="item in termList"
                 :key="item.id"
@@ -75,7 +75,7 @@
           </div>
           <div class="test-bank-section--filter--item">
             <span>文理</span>
-            <el-select v-model="art" @change="fetchList">
+            <el-select v-model="art" @change="searchList">
               <el-option
                 v-for="item in arts"
                 :key="item.value"
@@ -212,9 +212,7 @@ export default {
     const tokenParams = window.location.search.replace(/\?.*token=(.+)(&.*|#.*)?$/, (w, l) => l)
     const token = tokenParams.split('&')[0]
     if (token) {
-      if (!localStorage.getItem('token')) {
-        localStorage.setItem('token', token)
-      }
+      localStorage.setItem('token', token)
     }
     next()
   },
@@ -273,7 +271,7 @@ export default {
           id: '0'
         })
         this.term = '0'
-        this.fetchList()
+        this.searchList()
       })
     },
     selectFilter (role, id, index) {
@@ -329,15 +327,16 @@ export default {
       })
     },
     edit (id) {
-      this.dialogVisible = true
-      this.isModify = true
       this.editExamId = id
+      this.isModify = true
+      this.dialogVisible = true
     },
     getTestBankById (id) {
       const { href } = this.$router.resolve({ name: 'detail', params: { id: id } })
       window.open(href, '_blank')
     },
     newExam () {
+      this.editExamId = ''
       this.isModify = false
       this.dialogVisible = true
     },
@@ -364,10 +363,10 @@ export default {
       })
     },
     searchList (page) {
-      this.loading = true
-      if (Number.isFinite(page)) {
-        this.page = page
+      if (typeof page === 'undefined') {
+        page = 1
       }
+      this.page = page
       this.fetchList()
     },
     pageSizeChange (pageSize) {
