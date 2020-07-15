@@ -278,10 +278,7 @@ export default {
       const fileName = uuidv4().replace(/-/g, '') + this.fileObj.name.substring(this.fileObj.name.lastIndexOf('.'))
       return this.client.multipartUpload(PATH + fileName, this.fileObj, {
         progress: function (p) {
-          return function (done) {
-            file.onProgress({ percent: p * 100 })
-            done()
-          }
+          file.onProgress({ percent: p * 100 })
         }
       }).then(function (res) {
         file.onSuccess(res, file)
@@ -291,11 +288,11 @@ export default {
     },
     uploadProgress (event, file) {
       this.progress = event.percent
-      setTimeout(() => {
-        if (event.percent === 100) {
+      if (this.progress === 100) {
+        setTimeout(() => {
           this.progress = 0
-        }
-      }, 100)
+        }, 100)
+      }
     },
     uploadOnSuccess (res, file) {
       if (!res) {
