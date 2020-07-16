@@ -392,7 +392,6 @@ export default {
     delSubject (index) {
       this.form.subjectList.splice(index, 1)
     }
-
   }
 }
 </script>

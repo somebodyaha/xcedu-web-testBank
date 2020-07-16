@@ -1,5 +1,5 @@
 <template>
-  <img v-if="logo" :src="logoUrl" alt="" style="height: 40px">
+  <img :src="logoUrl" alt="" style="height: 40px">
 </template>
 <script>
 import { getUserInfo } from '@/api/index'
@@ -12,7 +12,12 @@ export default {
   },
   computed: {
     logoUrl: function () {
-      return '/api/v1/' + this.logo + '&access_token=' + localStorage.getItem('token')
+      var href = window.location.href
+      var spstr = '//'
+      var prefix = href.indexOf(spstr) + spstr.length
+      var aim = href.substring(prefix)
+      var url = href.substring(0, prefix) + aim.substring(0, aim.indexOf('/'))
+      return url + '/api/v1/' + this.logo + '&access_token=' + localStorage.getItem('token')
     }
   },
   mounted () {
