@@ -1,5 +1,5 @@
 <template>
-  <img v-if="logo" :src="logoUrl" alt="" style="height: 40px">
+  <img v-if="logo" :src="logoUrl" alt="" style="height: 40px;">
 </template>
 <script>
 import { getUserInfo } from '@/api/index'
