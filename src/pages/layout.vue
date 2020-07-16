@@ -3,9 +3,9 @@
     <div class="app-testBank-header">
       <div class="app-testBank-header-input">
         <logo />
-        <el-input v-model="bankName" placeholder="资源标题" @keyup.native.enter="searchList">
+        <el-input v-model="bankName" placeholder="资源标题" @keyup.native.enter="searchList()">
           <template slot="append">
-            <el-button type="primary" @click="searchList">搜索</el-button>
+            <el-button type="primary" @click="searchList()">搜索</el-button>
           </template>
         </el-input>
         <el-button type="success" @click="newExam">新建考试</el-button>
@@ -64,7 +64,7 @@
           </div>
           <div class="test-bank-section--filter--item">
             <span>学期</span>
-            <el-select v-model="term" value-key="id" class="termSelect" @change="searchList">
+            <el-select v-model="term" value-key="id" class="termSelect" @change="searchList()">
               <el-option
                 v-for="item in termList"
                 :key="item.id"
@@ -75,7 +75,7 @@
           </div>
           <div class="test-bank-section--filter--item">
             <span>文理</span>
-            <el-select v-model="art" @change="searchList">
+            <el-select v-model="art" @change="searchList()">
               <el-option
                 v-for="item in arts"
                 :key="item.value"
