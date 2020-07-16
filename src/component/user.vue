@@ -16,7 +16,12 @@ export default {
   },
   computed: {
     avatarUrl: function () {
-      return '/api/v1/' + this.user.avatar + '&access_token=' + localStorage.getItem('token')
+      var href = window.location.href
+      var spstr = '//'
+      var prefix = href.indexOf(spstr) + spstr.length
+      var aim = href.substring(prefix)
+      var url = href.substring(0, prefix) + aim.substring(0, aim.indexOf('/'))
+      return url + '/api/v1/' + this.user.avatar + '&access_token=' + localStorage.getItem('token')
     }
   },
   mounted () {
