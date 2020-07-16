@@ -1,7 +1,7 @@
 <template>
   <div class="app-testBank-header-btns">
-    <el-avatar v-if="user.avatar" :src="user.avatar" />
-    <el-avatar v-else class="bgcolor"> {{ user.name }} </el-avatar>
+    <el-avatar v-if="user.avatar" :src="avatarUrl" />
+    <el-avatar v-else class="bgcolor"> {{ user.name && user.name.slice(-2) || '' }} </el-avatar>
     <!-- <i class="icon icon-home color" /> -->
     <!-- <i class="icon icon-logout color" /> -->
   </div>
@@ -14,9 +14,15 @@ export default {
       user: ''
     }
   },
+  computed: {
+    avatarUrl: function () {
+      return '/api/v1/' + this.user.avatar + '&access_token=' + localStorage.getItem('token')
+    }
+  },
   mounted () {
     getUserInfo().then(res => {
       this.user = res
+      window.localStorage.setItem('user', JSON.stringify(this.user))
     })
   }
 }

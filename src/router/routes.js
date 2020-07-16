@@ -17,7 +17,7 @@ const testBankDetail = {
 
 const fileView = {
   name: 'view',
-  path: '/mfs-testBank/detail/fileView/:url',
+  path: '/mfs-testBank/detail/fileView/:url/:contentType',
   component: View
 }
 

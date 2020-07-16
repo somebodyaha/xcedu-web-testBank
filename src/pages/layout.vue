@@ -3,12 +3,12 @@
     <div class="app-testBank-header">
       <div class="app-testBank-header-input">
         <logo />
-        <el-input v-model="bankName" placeholder="请输入内容">
+        <el-input v-model="bankName" placeholder="资源标题" @keyup.native.enter="searchList()">
           <template slot="append">
-            <el-button type="primary" @click="fetchList">搜索</el-button>
+            <el-button type="primary" @click="searchList()">搜索</el-button>
           </template>
         </el-input>
-        <el-button type="primary" @click="newExam">新建考试</el-button>
+        <el-button type="success" @click="newExam">新建考试</el-button>
       </div>
       <user />
     </div>
@@ -17,9 +17,17 @@
         <span>年级</span>
         <div class="filter-label-menu" :class="gradeOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="gradeActive === 0 ? 'active': ''" @click="selectFilter('grade', 0, 0)">全部</el-button>
-          <el-button v-for="(item, index) in gradeList" :key="index" type="text" :class="gradeActive === index+1 ? 'active': ''" @click="selectFilter('grade', item.id, index +1)">
-            {{ item.name }}
-          </el-button>
+          <template v-if="gradeList">
+            <el-button
+              v-for="(item, index) in gradeList"
+              :key="index"
+              type="text"
+              :class="gradeActive === index+1 ? 'active': ''"
+              @click="selectFilter('grade', item.id, index +1)"
+            >
+              {{ item.name }}
+            </el-button>
+          </template>
         </div>
         <div v-if="gradeMenuShow" class="filter-label-btn">
           <el-button v-if="gradeMenuShow && gradeOpen" type="text" @click="openMenu('grade')">展开<i class="el-icon-arrow-down" /></el-button>
@@ -30,9 +38,11 @@
         <span>学科</span>
         <div class="filter-label-menu" :class="subjectOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="subjectActive === 0 ? 'active': ''" @click="selectFilter('subject', 0, 0)">全部</el-button>
-          <el-button v-for="(item, index) in subjectList" :key="index" type="text" :class="subjectActive === index+1 ? 'active': ''" @click="selectFilter('subject',item.id, index +1)">
-            {{ item.name }}
-          </el-button>
+          <template v-if="subjectList">
+            <el-button v-for="(item, index) in subjectList" :key="index" type="text" :class="subjectActive === index+1 ? 'active': ''" @click="selectFilter('subject',item.id, index +1)">
+              {{ item.name }}
+            </el-button>
+          </template>
         </div>
         <div v-if="subjectMenuShow" class="filter-label-btn">
           <el-button v-if="subjectMenuShow && subjectOpen" type="text" @click="openMenu('subject')">展开<i class="el-icon-arrow-down" /></el-button>
@@ -43,9 +53,11 @@
         <span>类型</span>
         <div class="filter-label-menu" :class="typeOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="typeActive === 0 ? 'active': ''" @click="selectFilter('type',0, 0)">全部</el-button>
-          <el-button v-for="(item, index) in testList" :key="index" type="text" :class="typeActive === index+1 ? 'active': ''" @click="selectFilter('type',item.id, index +1)">
-            {{ item.name }}
-          </el-button>
+          <template v-if="testList">
+            <el-button v-for="(item, index) in testList" :key="index" type="text" :class="typeActive === index+1 ? 'active': ''" @click="selectFilter('type',item.id, index +1)">
+              {{ item.name }}
+            </el-button>
+          </template>
         </div>
         <div v-if="typeMenuShow" class="filter-label-btn">
           <el-button v-if="typeMenuShow && typeOpen" type="text" @click="openMenu('type')">展开<i class="el-icon-arrow-down" /></el-button>
@@ -64,7 +76,7 @@
           </div>
           <div class="test-bank-section--filter--item">
             <span>学期</span>
-            <el-select v-model="term" value-key="id" class="termSelect" @change="fetchList">
+            <el-select v-model="term" value-key="id" class="termSelect" @change="searchList()">
               <el-option
                 v-for="item in termList"
                 :key="item.id"
@@ -75,7 +87,7 @@
           </div>
           <div class="test-bank-section--filter--item">
             <span>文理</span>
-            <el-select v-model="art" @change="fetchList">
+            <el-select v-model="art" @change="searchList()">
               <el-option
                 v-for="item in arts"
                 :key="item.value"
@@ -92,39 +104,45 @@
       </el-row>
     </div>
     <div class="test-bank-section" style="background: none; padding-left: 0; padding-right: 0; margin-left: 45px; margin-right: 45px; padding-top: 0; margin-top: 5px;">
-      <div class=" bank-item-container">
-        <div v-for="(item, index) in list" :key="index" class="bank-item">
-          <div @click="getTestBankById(item.id)">
-            <div>
-              <img v-if="item.testType === 0" src="../assets/fold.png" alt="">
-              <img v-if="item.testType === 1" src="../assets/wen.png" alt="">
-              <img v-if="item.testType === 2" src="../assets/li.png" alt="">
+      <template v-if="list.length">
+        <div class=" bank-item-container">
+          <div v-for="(item, index) in list" :key="index" class="bank-item">
+            <div @click="getTestBankById(item.id)">
               <div>
-                <strong>{{ item.bankName }}</strong>
-                <el-checkbox v-model="item.checked" @click.stop.native="" />
-                <p>
-                  <span class="color">{{ item.gradeName }}</span>
-                  <span>{{ item.testName }}</span>
-                </p>
-                <em>{{ item.createdDate }}</em>
+                <img v-if="item.testType === 0" src="../assets/fold.png" alt="">
+                <img v-if="item.testType === 1" src="../assets/wen.png" alt="">
+                <img v-if="item.testType === 2" src="../assets/li.png" alt="">
+                <div>
+                  <strong>{{ item.bankName }}</strong>
+                  <el-checkbox v-model="item.checked" @click.stop.native="" />
+                  <p>
+                    <span class="color">{{ item.gradeName }}</span>
+                    <span>{{ item.testName }}</span>
+                  </p>
+                  <em>{{ item.createdDate }}</em>
+                </div>
               </div>
-            </div>
-            <div class="item-btn-groups">
-              <el-button type="text"><i class="icon-edit" @click.stop="edit(item.id)" /></el-button>
-              <el-button type="text"><i class="icon-delete" @click.stop="del(item.id)" /></el-button>
+              <div class="item-btn-groups">
+                <el-button type="text"><i class="icon-edit" @click.stop="edit(item.id)" /></el-button>
+                <el-button type="text"><i class="icon-delete" @click.stop="del(item.id)" /></el-button>
+              </div>
             </div>
           </div>
         </div>
+        <el-pagination
+          :page-size="pageSize"
+          :page-sizes="[8, 12, 16, 20]"
+          background
+          layout="prev, pager, next, jumper, sizes, total"
+          :total="total"
+          class="tx-c margin-top-size-nomal padding-bottom-size-nomal"
+          @current-change="searchList"
+          @size-change="pageSizeChange"
+        />
+      </template>
+      <div v-else class="tx-c">
+        <img src="../assets/noMsg.png">
       </div>
-      <el-pagination
-        :page-size="pageSize"
-        background
-        layout="prev, pager, next, jumper, sizes, total"
-        :total="total"
-        class="tx-c margin-top-size-nomal padding-bottom-size-nomal"
-        @current-change="searchList"
-        @size-change="pageSizeChange"
-      />
     </div>
     <newExam
       :edit-exam-id="editExamId"
@@ -135,8 +153,8 @@
   </section>
 </template>
 <script>
-import { delTestById, loadBatchByIds, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId } from '@/api/index'
-import { arrayToStrWithOutComma, downloadFile } from '../util/index'
+import { delTestById, loadBatchByIdsEx, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId } from '@/api/index'
+import { arrayToStrWithOutComma, downloadAttachment } from '../util/index'
 import user from '@/component/user'
 import logo from '@/component/logo'
 import newExam from '@/component/exam.vue'
@@ -159,7 +177,7 @@ export default {
       checkAll: false,
       total: 0,
       page: 1,
-      pageSize: 10,
+      pageSize: 12,
       dialogVisible: false,
       checkedListArr: [],
       testList: [],
@@ -202,32 +220,32 @@ export default {
     }
   },
   beforeRouteEnter (to, from, next) {
-    // window.localStorage.setItem('DirectHost', '192.168.20.197')
+    // window.localStorage.setItem('DirectHost', '192.168.20.144')
     const tokenParams = window.location.search.replace(/\?.*token=(.+)(&.*|#.*)?$/, (w, l) => l)
     const token = tokenParams.split('&')[0]
     if (token) {
-      if (!localStorage.getItem('token')) {
-        localStorage.setItem('token', token)
-      }
+      localStorage.setItem('token', token)
     }
     next()
   },
   mounted: function () {
     this.fetchList()
     getSearchList().then(res => {
-      this.testList = res.testList
-      this.gradeList = res.gradeList
-      this.subjectList = res.subjectList
-      this.academicYearList = res.academicYearList
-      this.academicYearList.unshift({
-        name: '全部',
-        id: '0'
-      })
-      this.year = '0'
-      //  判断菜单的展开 是否显示
-      this.$nextTick(function () {
-        this.initMenuBtns()
-      })
+      if (res) {
+        this.testList = res.testList
+        this.gradeList = res.gradeList
+        this.subjectList = res.subjectList
+        this.academicYearList = res.academicYearList
+        this.academicYearList.unshift({
+          name: '全部',
+          id: '0'
+        })
+        this.year = '0'
+        //  判断菜单的展开 是否显示
+        this.$nextTick(function () {
+          this.initMenuBtns()
+        })
+      }
     })
   },
   methods: {
@@ -267,7 +285,7 @@ export default {
           id: '0'
         })
         this.term = '0'
-        this.fetchList()
+        this.searchList()
       })
     },
     selectFilter (role, id, index) {
@@ -299,8 +317,11 @@ export default {
           message: '未选中考试'
         })
       } else {
-        loadBatchByIds({ ids: ids }).then(res => {
-          downloadFile(res, '')
+        loadBatchByIdsEx({ ids: ids }).then(res => {
+          for (const item of res) {
+            // window.open(item.url, '_blank')
+            downloadAttachment(item.url, item.displayName)
+          }
         })
       }
     },
@@ -320,15 +341,16 @@ export default {
       })
     },
     edit (id) {
-      this.dialogVisible = true
-      this.isModify = true
       this.editExamId = id
+      this.isModify = true
+      this.dialogVisible = true
     },
     getTestBankById (id) {
       const { href } = this.$router.resolve({ name: 'detail', params: { id: id } })
       window.open(href, '_blank')
     },
     newExam () {
+      this.editExamId = ''
       this.isModify = false
       this.dialogVisible = true
     },
@@ -346,19 +368,21 @@ export default {
       }
       getListByParams(req).then(res => {
         const arr = []
-        for (const item of res.records) {
-          item.checked = false
-          arr.push(item)
+        if (res.records.length > 0) {
+          for (const item of res.records) {
+            item.checked = false
+            arr.push(item)
+          }
+          this.list = arr
+          this.total = res.totalRecords
         }
-        this.list = arr
-        this.total = res.totalRecords
       })
     },
     searchList (page) {
-      this.loading = true
-      if (Number.isFinite(page)) {
-        this.page = page
+      if (typeof page === 'undefined') {
+        page = 1
       }
+      this.page = page
       this.fetchList()
     },
     pageSizeChange (pageSize) {

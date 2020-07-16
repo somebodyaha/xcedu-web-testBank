@@ -44,10 +44,22 @@ export function loadBatchByIds (params) {
   return axios.get('/api-personalized/questions/indexBatchDownload', { params })
 }
 
+export function loadBatchByIdsEx (params) {
+  return axios.get('/api-personalized/questions/getAnnexListByBankIds', { params })
+}
+
 export function loadDetailBatchByIds (params) {
   return axios.get('/api-personalized/questions/detailsBatchDownload', { params })
 }
 
+export function loadDetailBatchByIdsEx (params) {
+  return axios.get('/api-base/attachments/infoList', { params })
+}
+
 export function getUserInfo () {
   return axios.get('/api-base/users/userInfo')
+}
+
+export function uploadResource (data) {
+  return axios.post('/api-base/attachments/save', data)
 }
