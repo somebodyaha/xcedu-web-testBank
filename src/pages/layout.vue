@@ -1,14 +1,20 @@
 <template>
   <section>
     <div class="app-testBank-header">
-      <div class="app-testBank-header-input">
-        <logo />
-        <el-input v-model="bankName" placeholder="资源标题" @keyup.native.enter="searchList()">
+      <div>
+        <logo style="margin-right: 60px;" />
+        <el-input
+          v-model="bankName"
+          size="medium"
+          placeholder="资源标题"
+          class="theme-append bg-grey search-input"
+          @keyup.native.enter="searchList()"
+        >
           <template slot="append">
-            <el-button type="primary" @click="searchList()">搜索</el-button>
+            <el-button @click="searchList()">搜索</el-button>
           </template>
         </el-input>
-        <el-button type="success" @click="newExam">新建考试</el-button>
+        <el-button type="success" size="medium" class="margin-left-size-mix" @click="newExam">新建考试</el-button>
       </div>
       <user />
     </div>
@@ -395,3 +401,17 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+  .app-testBank-header {
+    .search-input {
+      width: 425px;
+      /deep/ .el-input__inner {
+        background-color: transparent;
+      }
+    }
+    /deep/ .el-button--success {
+      background-color: #35a44b;
+      border-color: #35a44b;
+    }
+  }
+</style>

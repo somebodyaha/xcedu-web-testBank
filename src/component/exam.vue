@@ -73,7 +73,7 @@
               required: true, message: '资源不能为空', trigger: ['change']
             }"
           >
-            <el-input v-model="item.bankAnnexName" class="fileUpInput" readonly @input="changeBankAnnexName(item.bankAnnexId, index)">
+            <el-input v-model="item.bankAnnexName" class="theme-append fileUpInput" readonly @input="changeBankAnnexName(item.bankAnnexId, index)">
               <el-upload
                 slot="append"
                 action=""
@@ -85,7 +85,7 @@
                 :on-progress="uploadProgress"
                 :on-success="uploadOnSuccess"
               >
-                <el-button type="primary">上传</el-button>
+                <el-button>上传</el-button>
               </el-upload>
             </el-input>
           </el-form-item>

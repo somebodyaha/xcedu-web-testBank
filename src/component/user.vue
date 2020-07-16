@@ -1,7 +1,7 @@
 <template>
   <div class="app-testBank-header-btns">
-    <el-avatar v-if="user.avatar" :src="avatarUrl" />
-    <el-avatar v-else class="bgcolor"> {{ user.name && user.name.slice(-2) || '' }} </el-avatar>
+    <el-avatar v-if="user.avatar" :src="avatarUrl" size="medium" />
+    <el-avatar v-else size="medium" class="bgcolor"> {{ user.name && user.name.slice(-2) || '' }} </el-avatar>
     <!-- <i class="icon icon-home color" /> -->
     <!-- <i class="icon icon-logout color" /> -->
   </div>
