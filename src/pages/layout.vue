@@ -17,9 +17,17 @@
         <span>年级</span>
         <div class="filter-label-menu" :class="gradeOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="gradeActive === 0 ? 'active': ''" @click="selectFilter('grade', 0, 0)">全部</el-button>
-          <el-button v-for="(item, index) in gradeList" :key="index" type="text" :class="gradeActive === index+1 ? 'active': ''" @click="selectFilter('grade', item.id, index +1)">
-            {{ item.name }}
-          </el-button>
+          <template v-if="gradeList">
+            <el-button
+              v-for="(item, index) in gradeList"
+              :key="index"
+              type="text"
+              :class="gradeActive === index+1 ? 'active': ''"
+              @click="selectFilter('grade', item.id, index +1)"
+            >
+              {{ item.name }}
+            </el-button>
+          </template>
         </div>
         <div v-if="gradeMenuShow" class="filter-label-btn">
           <el-button v-if="gradeMenuShow && gradeOpen" type="text" @click="openMenu('grade')">展开<i class="el-icon-arrow-down" /></el-button>
@@ -30,9 +38,11 @@
         <span>学科</span>
         <div class="filter-label-menu" :class="subjectOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="subjectActive === 0 ? 'active': ''" @click="selectFilter('subject', 0, 0)">全部</el-button>
-          <el-button v-for="(item, index) in subjectList" :key="index" type="text" :class="subjectActive === index+1 ? 'active': ''" @click="selectFilter('subject',item.id, index +1)">
-            {{ item.name }}
-          </el-button>
+          <template v-if="subjectList">
+            <el-button v-for="(item, index) in subjectList" :key="index" type="text" :class="subjectActive === index+1 ? 'active': ''" @click="selectFilter('subject',item.id, index +1)">
+              {{ item.name }}
+            </el-button>
+          </template>
         </div>
         <div v-if="subjectMenuShow" class="filter-label-btn">
           <el-button v-if="subjectMenuShow && subjectOpen" type="text" @click="openMenu('subject')">展开<i class="el-icon-arrow-down" /></el-button>
@@ -43,9 +53,11 @@
         <span>类型</span>
         <div class="filter-label-menu" :class="typeOpen ? 'hiddenMenu': ''">
           <el-button type="text" :class="typeActive === 0 ? 'active': ''" @click="selectFilter('type',0, 0)">全部</el-button>
-          <el-button v-for="(item, index) in testList" :key="index" type="text" :class="typeActive === index+1 ? 'active': ''" @click="selectFilter('type',item.id, index +1)">
-            {{ item.name }}
-          </el-button>
+          <template v-if="testList">
+            <el-button v-for="(item, index) in testList" :key="index" type="text" :class="typeActive === index+1 ? 'active': ''" @click="selectFilter('type',item.id, index +1)">
+              {{ item.name }}
+            </el-button>
+          </template>
         </div>
         <div v-if="typeMenuShow" class="filter-label-btn">
           <el-button v-if="typeMenuShow && typeOpen" type="text" @click="openMenu('type')">展开<i class="el-icon-arrow-down" /></el-button>
@@ -219,19 +231,21 @@ export default {
   mounted: function () {
     this.fetchList()
     getSearchList().then(res => {
-      this.testList = res.testList
-      this.gradeList = res.gradeList
-      this.subjectList = res.subjectList
-      this.academicYearList = res.academicYearList
-      this.academicYearList.unshift({
-        name: '全部',
-        id: '0'
-      })
-      this.year = '0'
-      //  判断菜单的展开 是否显示
-      this.$nextTick(function () {
-        this.initMenuBtns()
-      })
+      if (res) {
+        this.testList = res.testList
+        this.gradeList = res.gradeList
+        this.subjectList = res.subjectList
+        this.academicYearList = res.academicYearList
+        this.academicYearList.unshift({
+          name: '全部',
+          id: '0'
+        })
+        this.year = '0'
+        //  判断菜单的展开 是否显示
+        this.$nextTick(function () {
+          this.initMenuBtns()
+        })
+      }
     })
   },
   methods: {
@@ -354,12 +368,14 @@ export default {
       }
       getListByParams(req).then(res => {
         const arr = []
-        for (const item of res.records) {
-          item.checked = false
-          arr.push(item)
+        if (res.records.length > 0) {
+          for (const item of res.records) {
+            item.checked = false
+            arr.push(item)
+          }
+          this.list = arr
+          this.total = res.totalRecords
         }
-        this.list = arr
-        this.total = res.totalRecords
       })
     },
     searchList (page) {
