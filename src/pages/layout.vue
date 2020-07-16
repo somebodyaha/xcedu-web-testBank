@@ -202,7 +202,7 @@ export default {
     }
   },
   beforeRouteEnter (to, from, next) {
-    window.localStorage.setItem('DirectHost', '192.168.20.144')
+    // window.localStorage.setItem('DirectHost', '192.168.20.197')
     const tokenParams = window.location.search.replace(/\?.*token=(.+)(&.*|#.*)?$/, (w, l) => l)
     const token = tokenParams.split('&')[0]
     if (token) {
