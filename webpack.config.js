@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -298,7 +299,13 @@ const baseConf = (env = 'production') => ({
       'process.env': definePluginOptions(env)
     }),
     new FriendlyErrorsWebpackPlugin(),
-    new CaseSensitivePathsPlugin()
+    new CaseSensitivePathsPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [{
+        from: resolve('public'),
+        to: ''
+      }]
+    })
   ]
 })
 
@@ -312,7 +319,7 @@ const devConf = smart(baseConf('development'), {
   devServer: devServerOptions(),
   plugins: [
     new HtmlWebpackPlugin({
-      template: resolve('public/index.html'),
+      template: resolve('index.html'),
       templateParameters: {
         MODULE_COMMON_BASE_URL: devEnvConfig.MODULE_COMMON_BASE_URL,
         MODULE_FTP_BASE_URL: devEnvConfig.MODULE_FTP_BASE_URL

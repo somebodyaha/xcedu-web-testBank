@@ -30,7 +30,7 @@
       >
         <img style="" :src="previewLink">
       </div>
-      <iframe v-else id="iframeView" :src="previewLink" style="width: 100%; height: 100vh; border: 0 none;" frameborder="0" />
+      <iframe v-else-if="url" id="iframeView" :src="url" style="width: 100%; height: 100vh; border: 0 none;" frameborder="0" />
       <!--<div class="loadDiv">
         <div class="clearfix">
           <span v-if="!isfullScreen" class="color" style="position: relative; top: 15px;  left: 15px; cursor: pointer" @click="fullScreen"><i class="fa fa-max color" /></span>
@@ -151,7 +151,7 @@ export default {
       this.getItemInfo(id)
     },
     initPdf: function (previewLink) {
-      this.url = '/pdf/web/viewer.html?file=' + this.pdfPreview
+      this.url = '/pdf/web/viewer.html?file=' + previewLink
       // debugger
       // 初始化iframe 以后 根据文档的高度 设置 外部iframe 的高度
       // var autoHeight = $("#viewer").height();
@@ -182,9 +182,9 @@ export default {
         ) {
           this.previewLink = data.url
         } else if (this.canPreview) {
-          // this.pdfPreview = data.url.substring(0, idx) + '.pdf'
-          this.previewLink = data.url.substring(0, idx) + '.pdf'
-          // this.initPdf(this.pdfPreview)
+          this.pdfPreview = data.url.substring(0, idx) + '.pdf'
+          // this.previewLink = data.url.substring(0, idx) + '.pdf'
+          this.initPdf(this.pdfPreview)
         }
         /* this.loadLink =
           this.XCFrontend.ossfileurl +

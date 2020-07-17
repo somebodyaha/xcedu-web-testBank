@@ -2,19 +2,19 @@
   <section>
     <div class="app-testBank-header">
       <div>
-        <logo style="margin-right: 60px;" />
+        <logo class="fl" style="margin-right: 60px;" />
         <el-input
           v-model="bankName"
           size="medium"
           placeholder="资源标题"
-          class="theme-append bg-grey search-input"
+          class="fl theme-append bg-grey search-input"
           @keyup.native.enter="searchList()"
         >
           <template slot="append">
             <el-button @click="searchList()">搜索</el-button>
           </template>
         </el-input>
-        <el-button type="success" size="medium" class="margin-left-size-mix" @click="newExam">新建考试</el-button>
+        <el-button v-if="allowed" type="success" size="medium" class="fl margin-left-size-mix" @click="newExam">新建考试</el-button>
       </div>
       <user />
     </div>
@@ -128,10 +128,11 @@
                   <em>{{ item.createdDate }}</em>
                 </div>
               </div>
-              <div class="item-btn-groups">
+              <div v-if="allowed" class="item-btn-groups">
                 <el-button type="text"><i class="icon-edit" @click.stop="edit(item.id)" /></el-button>
                 <el-button type="text"><i class="icon-delete" @click.stop="del(item.id)" /></el-button>
               </div>
+              <div v-else class="margin-top-size-nomal" />
             </div>
           </div>
         </div>
@@ -159,7 +160,7 @@
   </section>
 </template>
 <script>
-import { delTestById, loadBatchByIdsEx, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId } from '@/api/index'
+import { delTestById, loadBatchByIdsEx, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId, getUserInfo } from '@/api/index'
 import { arrayToStrWithOutComma, downloadAttachment } from '../util/index'
 import user from '@/component/user'
 import logo from '@/component/logo'
@@ -168,6 +169,7 @@ export default {
   components: { user, logo, newExam },
   data () {
     return {
+      user: null,
       year: '',
       term: '0',
       art: 0,
@@ -212,6 +214,11 @@ export default {
       typeOpen: ''
     }
   },
+  computed: {
+    allowed: function () {
+      return !(this.user && this.user.allowed)
+    }
+  },
   watch: {
     checkAll: function () {
       if (this.checkAll) {
@@ -231,8 +238,15 @@ export default {
     const token = tokenParams.split('&')[0]
     if (token) {
       localStorage.setItem('token', token)
+    } else {
+      // localStorage.setItem('token', 'eyJhbGciOiJIUzUxMiIsInppcCI6IkRFRiJ9.eNqUU81u1DAQfpecvZWTzSbZvVWckAonXsA_k6zZxI7suJssQgLEkQtCHLiVC7dKCC5tAfEy3RbeAjvZny5wgCiRZ775ZjJjf34SPG5EMAsiYBBizEYUomQUc56OpimPRwkw9-IUEgIBCoyljpwRMk6TOEs4plOaZjhMeDjG-STnFOMxcURhjCNWncpzwaAuSQOjRi1AjgzoU9CeQppgFk6m8TSLs0mKAmjrHpjgKMMeULo4UbJ4SCpwxdaX33--eX598ez64vzo9t2366vXN2fv16-ujm7eflyff7j98jLoczb8uyhTur7PHYidU4Ou7ikOvkNWEmM0gJxhHKK-W0HKmYHm7wCtq1lFJClA9347rx_07h9ehAjnGow5EWbINaKQtt6k98hcWSNkcWCfClj2QKNJN1TTCFpSbW3jhoE9bXC9VWjCrdvoTSxEldKuddaxciAM_i5zcDlpyJ7cV-xMA7vfSaUrUm49IXPlJhCycd-2TSEPGv997h3jP3poRAWPCC3vDLqHvHcK0sLBUbh_KqtZH_byqor-xCM2xYTSLA0xjdI4xKG3xsQJmGAcTwbNeD04spnb1nqhWyfTY8aUlY1XyRxkY6W_ANBuVKRVCVsV8RWti7LbyeWYV0Ii47JqgdiiKHXnFrNyS-ME3VpZWkQrn2LcuS9BbtdWELW1qd1blaMUqy73KWE0DtGCqKVFbE4WRKIliLkrKDpAvCtK1Dae52ut5kQWaEEdyAofoavOx_KiLflmzu39-nr248Wn9eXnDdzv3j9cdbd7h1RGwzzJ3EY7K4qnOE2we9Lg6S8AAAD__w.zLvxjum2sKht2uUo5Xlw_j9mKSgLdfWeGECFDrEg_ySYYFzMIsiuHdm3wmbjNadTIgU2wpJzH6YhdW7HO5KTEg')
     }
     next()
+  },
+  created: function () {
+    getUserInfo().then(res => {
+      this.user = res
+    })
   },
   mounted: function () {
     this.fetchList()
