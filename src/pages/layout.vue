@@ -401,17 +401,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-  .app-testBank-header {
-    .search-input {
-      width: 425px;
-      /deep/ .el-input__inner {
-        background-color: transparent;
-      }
-    }
-    /deep/ .el-button--success {
-      background-color: #35a44b;
-      border-color: #35a44b;
-    }
-  }
-</style>

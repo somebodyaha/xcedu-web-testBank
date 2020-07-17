@@ -15,6 +15,16 @@
     width: 100%;
     box-sizing: border-box;
     top: 0;
+    .search-input {
+      width: 425px;
+      .el-input__inner {
+        background-color: transparent;
+      }
+    }
+    .el-button--success {
+      background-color: #35a44b;
+      border-color: #35a44b;
+    }
     &-btns {
       display: flex;
       align-items: center;
