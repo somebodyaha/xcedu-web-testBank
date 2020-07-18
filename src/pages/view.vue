@@ -69,6 +69,7 @@ import $ from 'jquery'
 export default {
   data () {
     return {
+      publicPath: process.env.WEB_PUBLIC_PATH,
       entity: {},
       itemList: [],
       contentType: '',
@@ -151,7 +152,7 @@ export default {
       this.getItemInfo(id)
     },
     initPdf: function (previewLink) {
-      this.url = '/pdf/web/viewer.html?file=' + previewLink
+      this.url = this.publicPath + 'pdf/web/viewer.html?file=' + previewLink
       // debugger
       // 初始化iframe 以后 根据文档的高度 设置 外部iframe 的高度
       // var autoHeight = $("#viewer").height();

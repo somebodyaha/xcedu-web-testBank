@@ -129,8 +129,8 @@
                 </div>
               </div>
               <div v-if="allowed" class="item-btn-groups">
-                <el-button type="text"><i class="icon-edit" @click.stop="edit(item.id)" /></el-button>
-                <el-button type="text"><i class="icon-delete" @click.stop="del(item.id)" /></el-button>
+                <el-button type="text" @click.stop="edit(item.id)"><i class="icon-edit" /></el-button>
+                <el-button type="text" @click.stop="del(item.id)"><i class="icon-delete" /></el-button>
               </div>
               <div v-else class="margin-top-size-nomal" />
             </div>
