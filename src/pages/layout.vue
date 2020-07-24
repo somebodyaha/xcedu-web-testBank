@@ -387,15 +387,11 @@ export default {
         bankName: this.bankName
       }
       getListByParams(req).then(res => {
-        const arr = []
-        if (res.records.length > 0) {
-          for (const item of res.records) {
-            item.checked = false
-            arr.push(item)
-          }
-          this.list = arr
-          this.total = res.totalRecords
+        for (const item of res.records) {
+          item.checked = false
         }
+        this.list = res.records
+        this.total = res.totalRecords
       })
     },
     searchList (page) {
