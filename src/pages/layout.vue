@@ -137,6 +137,7 @@
           </div>
         </div>
         <el-pagination
+          :current-page="page"
           :page-size="pageSize"
           :page-sizes="[8, 12, 16, 20]"
           background
