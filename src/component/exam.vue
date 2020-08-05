@@ -302,7 +302,8 @@ export default {
         displayName: rawFile.name,
         fileSize: rawFile.size,
         id: bankAnnex.bankAnnexId,
-        relativePath: PATH
+        relativePath: PATH,
+        storageLocation: 'ALIYUN'
       }).then(res2 => {
         bankAnnex.progress = undefined
         bankAnnex.contentType = res2.contentType
