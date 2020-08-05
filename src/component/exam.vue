@@ -77,13 +77,10 @@
               <el-upload
                 slot="append"
                 action=""
-                :file-list="fileList"
                 :show-file-list="false"
-                :before-upload="(file) => beforeUpload(file, index)"
-                :http-request="(file) => fileUpLoad(file,index)"
+                :before-upload="beforeUpload"
+                :http-request="(http) => fileUpLoad(http, item)"
                 :on-change="fileChange"
-                :on-progress="uploadProgress"
-                :on-success="uploadOnSuccess"
               >
                 <el-button>上传</el-button>
               </el-upload>
@@ -96,17 +93,19 @@
             <i class="icon icon-minus-solid-o red pointer size-large-xx" @click="delSubject(index)" />
           </div>
         </el-col>
+        <el-col :span="9" :offset="13">
+          <div v-if="item.progress !== undefined" class="progress" style="margin-bottom: 6px;">
+            <span :style="{width: item.progress + '%'}" />
+          </div>
+          <div v-if="item.error" class="error">
+            <span class="red">{{ item.error }}</span>
+          </div>
+        </el-col>
       </el-row>
       <el-row>
         <el-col :span="9" :offset="13">
           <div>
             <span class="text-color-grey">.ppt .pptx .pdf .doc .docx .mp3 .mp4等格式文件</span>
-          </div>
-          <div v-if="progress" class="progress">
-            <span :style="{width: progress + '%'}" />
-          </div>
-          <div class="error">
-            <span class="red">{{ error }}</span>
           </div>
         </el-col>
       </el-row>
@@ -142,7 +141,6 @@ export default {
   data () {
     return {
       client: null,
-      fileList: [],
       isShow: false,
       academicYearList: [], // 学年
       semesterList: [], // 学期
@@ -191,10 +189,6 @@ export default {
           { required: true, message: '请选择考试', trigger: ['blur', 'change'] }
         ]
       },
-      fileObj: '',
-      progress: 0,
-      error: '',
-      currentIndex: '',
       examId: ''
     }
   },
@@ -248,9 +242,8 @@ export default {
     },
     fileChange (file) {
       // 获取文件流
-      this.fileObj = file.raw
     },
-    beforeUpload (file, index) {
+    beforeUpload (file) {
       if (file.name.indexOf('.') === -1) {
         this.$message.error('禁止上传无格式的文件！')
         return false
@@ -260,9 +253,12 @@ export default {
         this.$message.error('禁止上传.exe, .cmd, .bat, .sh格式的文件！')
         return false
       }
-      this.currentIndex = index
     },
-    fileUpLoad (file, index) {
+    fileUpLoad (http, bankAnnex) {
+      if (bankAnnex.progress !== undefined) {
+        this.$message.error('文件正在上传中，请稍候')
+        return
+      }
       if (!PATH) {
         const userStr = window.localStorage.getItem('user')
         PATH = userStr && JSON.parse(userStr).domainId + '/exam/'
@@ -275,44 +271,46 @@ export default {
           bucket: 'gtyzfile'
         })
       }
-      const fileName = uuidv4().replace(/-/g, '') + this.fileObj.name.substring(this.fileObj.name.lastIndexOf('.'))
-      return this.client.multipartUpload(PATH + fileName, this.fileObj, {
+      const id = uuidv4().replace(/-/g, '')
+      const rawFile = http.file
+      bankAnnex.bankAnnexId = id
+      bankAnnex.bankAnnexName = rawFile.name
+      const fileName = id + rawFile.name.substring(rawFile.name.lastIndexOf('.'))
+      if (!('progress' in bankAnnex)) {
+        this.$set(bankAnnex, 'progress', undefined)
+      }
+      if (!('error' in bankAnnex)) {
+        this.$set(bankAnnex, 'error', '')
+      } else {
+        bankAnnex.error = ''
+      }
+      this.client.multipartUpload(PATH + fileName, rawFile, {
         progress: function (p) {
-          file.onProgress({ percent: p * 100 })
+          bankAnnex.progress = p * 100
         }
-      }).then(function (res) {
-        file.onSuccess(res, file)
+      }).then(res => {
+        this.uploadOnSuccess(res, bankAnnex, rawFile)
       }).catch(err => {
-        this.error = err
+        bankAnnex.error = err
+        bankAnnex.progress = undefined
+        bankAnnex.bankAnnexId = ''
+        bankAnnex.bankAnnexName = ''
       })
     },
-    uploadProgress (event, file) {
-      this.progress = event.percent
-      if (this.progress === 100) {
-        setTimeout(() => {
-          this.progress = 0
-        }, 100)
-      }
-    },
-    uploadOnSuccess (res, file) {
-      if (!res) {
-        return
-      }
-      const fileUuid = res.name.substring(res.name.lastIndexOf('/')).replace('/', '').replace(/\..*/, '')
+    uploadOnSuccess (res, bankAnnex, rawFile) {
       uploadResource({
-        // contentType: 'string',
-        displayName: file.name,
-        // fileName: 'string',
-        fileSize: file.size,
-        id: fileUuid,
-        // link2: res.res.requestUrls[0],
+        displayName: rawFile.name,
+        fileSize: rawFile.size,
+        id: bankAnnex.bankAnnexId,
         relativePath: PATH
-        // suffixName: '.mp4'
-        // uploadIp: 'string'
       }).then(res2 => {
-        this.form.bankAnnexList[this.currentIndex].bankAnnexId = res2.id
-        this.form.bankAnnexList[this.currentIndex].contentType = res2.contentType
-        this.form.bankAnnexList[this.currentIndex].bankAnnexName = res2.displayName
+        bankAnnex.progress = undefined
+        bankAnnex.contentType = res2.contentType
+      }).catch(err => {
+        bankAnnex.error = err
+        bankAnnex.progress = undefined
+        bankAnnex.bankAnnexId = ''
+        bankAnnex.bankAnnexName = ''
       })
     },
     getSubjectByGradeId (val) {
