@@ -256,7 +256,7 @@ export default {
     },
     fileUpLoad (http, bankAnnex) {
       if (bankAnnex.progress !== undefined) {
-        this.$message.error('文件正在上传中，请稍候')
+        this.$message.warning('文件正在上传中，请稍候')
         return
       }
       if (!PATH) {
@@ -384,6 +384,12 @@ export default {
     saveForm (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          for (var i = 0; i < this.form.bankAnnexList.length; i++) {
+            if (this.form.bankAnnexList[i].progress !== undefined) {
+              this.$message.warning('文件正在上传中，请稍后再提交！')
+              return
+            }
+          }
           for (const item of this.academicYearList) {
             if (this.form.academicYear === item.id) {
               this.form.academicYearName = item.name
