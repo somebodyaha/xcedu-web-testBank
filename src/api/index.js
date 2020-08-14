@@ -60,6 +60,11 @@ export function getUserInfo () {
   return axios.get('/api-base/users/userInfo')
 }
 
+// 获取阿里云密钥
+export function getOSSKey (data) {
+  return axios.post('/api-base/attachments/settings', data)
+}
+
 export function uploadResource (data) {
   return axios.post('/api-base/attachments/save', data)
 }

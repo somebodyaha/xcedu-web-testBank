@@ -117,11 +117,13 @@
   </el-dialog>
 </template>
 <script>
-import { getSemesterByYearId, getSubjectByGradeId, createExam, editExamById, editExam, uploadResource } from '@/api/index'
+import { getSemesterByYearId, getSubjectByGradeId, createExam, editExamById, editExam, getOSSKey, uploadResource } from '@/api/index'
 import OSS from 'ali-oss'
 import { v4 as uuidv4 } from 'uuid'
 
 let PATH = null
+const region = 'oss-cn-shenzhen'
+const bucket = 'gtyzfile'
 
 export default {
   props: {
@@ -240,6 +242,23 @@ export default {
         })
       }
     },
+    getClient () {
+      return new Promise((resolve, reject) => {
+        if (!this.client) {
+          getOSSKey().then(res => {
+            this.client = new OSS({
+              region: region,
+              accessKeyId: res.accessKeyId,
+              accessKeySecret: res.accessKeySecret,
+              bucket: bucket
+            })
+            resolve(this.client)
+          }).catch(() => reject(new Error('no key')))
+        } else {
+          resolve(this.client)
+        }
+      })
+    },
     fileChange (file) {
       // 获取文件流
     },
@@ -263,14 +282,6 @@ export default {
         const userStr = window.localStorage.getItem('user')
         PATH = userStr && JSON.parse(userStr).domainId + '/exam/'
       }
-      if (!this.client) {
-        this.client = new OSS({
-          region: 'oss-cn-shenzhen',
-          accessKeyId: 'LTAI4G2nbEWcDi9djnDY8tvJ',
-          accessKeySecret: 'ZZN02tVv7BpJEhc5bWa2NlNIdL6Vvp',
-          bucket: 'gtyzfile'
-        })
-      }
       const id = uuidv4().replace(/-/g, '')
       const rawFile = http.file
       bankAnnex.bankAnnexId = id
@@ -284,17 +295,19 @@ export default {
       } else {
         bankAnnex.error = ''
       }
-      this.client.multipartUpload(PATH + fileName, rawFile, {
-        progress: function (p) {
-          bankAnnex.progress = p * 100
-        }
-      }).then(res => {
-        this.uploadOnSuccess(res, bankAnnex, rawFile)
-      }).catch(err => {
-        bankAnnex.error = err
-        bankAnnex.progress = undefined
-        bankAnnex.bankAnnexId = ''
-        bankAnnex.bankAnnexName = ''
+      this.getClient().then(client => {
+        client.multipartUpload(PATH + fileName, rawFile, {
+          progress: function (p) {
+            bankAnnex.progress = p * 100
+          }
+        }).then(res => {
+          this.uploadOnSuccess(res, bankAnnex, rawFile)
+        }).catch(err => {
+          bankAnnex.error = err
+          bankAnnex.progress = undefined
+          bankAnnex.bankAnnexId = ''
+          bankAnnex.bankAnnexName = ''
+        })
       })
     },
     uploadOnSuccess (res, bankAnnex, rawFile) {
