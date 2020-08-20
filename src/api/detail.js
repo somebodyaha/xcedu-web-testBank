@@ -1,5 +1,5 @@
 // 详情页面
-import { axios } from '@xcedu/web-share'
+import { axios } from 'xc-share'
 export function resLinkView (resourceId) {
   return axios({
     url: '/resources/detail',

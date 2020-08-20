@@ -1,4 +1,4 @@
-import { axios } from '@xcedu/web-share'
+import { axios } from 'xc-share'
 // 修改提交数据
 export function getListByParams (params) {
   return axios.get('/api-personalized/questions/pageList', { params })
