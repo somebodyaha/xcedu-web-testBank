@@ -2,7 +2,7 @@
   <section>
     <div class="app-testBank-header">
       <div>
-        <logo class="fl" style="margin-right: 60px;" />
+        <Logo class="fl" style="margin-right: 60px;" />
         <el-input
           v-model="bankName"
           size="medium"
@@ -16,7 +16,7 @@
         </el-input>
         <el-button v-if="allowed" type="success" size="medium" class="fl margin-left-size-mix" @click="newExam">新建考试</el-button>
       </div>
-      <user />
+      <User />
     </div>
     <div class="filter-nav test-bank-section">
       <div ref="gradeMenu" class="filter-label">
@@ -163,11 +163,9 @@
 <script>
 import { delTestById, loadBatchByIdsEx, getListByParams, getSearchList, getSemesterByYearId, getSubjectByGradeId, getUserInfo } from '@/api/index'
 import { arrayToStrWithOutComma, downloadAttachment } from '../util/index'
-import user from '@/component/user'
-import logo from '@/component/logo'
 import newExam from '@/component/exam.vue'
 export default {
-  components: { user, logo, newExam },
+  components: { newExam },
   data () {
     return {
       user: null,
@@ -234,19 +232,18 @@ export default {
     }
   },
   beforeRouteEnter (to, from, next) {
-    // window.localStorage.setItem('DirectHost', '192.168.20.144')
+    // window.webStorage.setItem('DirectHost', '192.168.20.144')
     const tokenParams = window.location.search.replace(/\?.*token=(.+)(&.*|#.*)?$/, (w, l) => l)
     const token = tokenParams.split('&')[0]
     if (token) {
-      localStorage.setItem('token', token)
+      window.webStorage.setItem('token', token)
     } else {
-      // localStorage.setItem('token', 'eyJhbGciOiJIUzUxMiIsInppcCI6IkRFRiJ9.eNqUU81u1DAQfpecvZWT7E-yt4oTUuHEC9jxJGs2sSP_dJNFSIA4ckGIA7dy4VYJwaUtIF6m28JbYCeb3S5wgEiRZz5_M54Zf34SPDY8mAdxRHE4nbBRnkZ0NKY4HpEcZiNGYzpN6ISlUxygQFvqyAkh8Ww6TqYM05TOEhfJwhjnk5xRjGPiiFxrR6xamec8g7okBkZGLkGMNKhTUJ5CTDAPJ-kEx2mcpCiApt4CSTTxgFTFiRTFQ1KBS7a5_P7zzfPri2fXF-dHt---XV-9vjl7v3l1dXTz9uPm_MPtl5dBF7Pl30Uzqer7zIG-iRpUdU8y8BVmJdFaAYg5xiHqquWknGswfwdoXc0rIkgBqvObRf2gc__wIkQYU6D1Cdd9rOaFsPU2vEMW0mouigP7lMOqA4wibZ9NIWhINdjaNQN7Wu96q1CEWTfo7V6IKqlc6VmblT2h93eRvcuIIXtyl7HVBnbHCakqUg4eF7l0HXBh3D-UycVB4b_3vWP8Rw2GV_CI0PJOo3vIe6cgLBxchTtTWpV1215eVdHdeJSlmFCazEJMo9k4xKG3YuIETDAeT3rNeD04sl7YxoKDrJPpcZZJK4xXyQKEscI_AGi2KlKyhEFFbE3romx3cjlmFRdIu6iao2xZlKp1i167xThBN1aUFtHKh2h37ysQw9pwIgeb2r1VOUqxbnMfEkZxiJZErizKFmRJBFoBX7iEvAXE2qJEjfE8n2u9IKJAS-rArPA7dN36vbxoSrbtc3hfX89-vPi0ufy8hbvp_cNTd9M7pGY0zKeJG7SzonGKZ1Psvlnw9BcAAAD__w.byB4QqSYT2mv5_eTfGdk2_Y8tbuzXM3x1Tsrbl22UWz2-I0_QCZgbueCpnn2kYYZblCw03zUJtDNe76ola8inw')
+      // window.webStorage.setItem('token', 'eyJhbGciOiJIUzUxMiIsInppcCI6IkRFRiJ9.eNqUU81u1DAQfpecvZWT7E-yt4oTUuHEC9jxJGs2sSP_dJNFSIA4ckGIA7dy4VYJwaUtIF6m28JbYCeb3S5wgEiRZz5_M54Zf34SPDY8mAdxRHE4nbBRnkZ0NKY4HpEcZiNGYzpN6ISlUxygQFvqyAkh8Ww6TqYM05TOEhfJwhjnk5xRjGPiiFxrR6xamec8g7okBkZGLkGMNKhTUJ5CTDAPJ-kEx2mcpCiApt4CSTTxgFTFiRTFQ1KBS7a5_P7zzfPri2fXF-dHt---XV-9vjl7v3l1dXTz9uPm_MPtl5dBF7Pl30Uzqer7zIG-iRpUdU8y8BVmJdFaAYg5xiHqquWknGswfwdoXc0rIkgBqvObRf2gc__wIkQYU6D1Cdd9rOaFsPU2vEMW0mouigP7lMOqA4wibZ9NIWhINdjaNQN7Wu96q1CEWTfo7V6IKqlc6VmblT2h93eRvcuIIXtyl7HVBnbHCakqUg4eF7l0HXBh3D-UycVB4b_3vWP8Rw2GV_CI0PJOo3vIe6cgLBxchTtTWpV1215eVdHdeJSlmFCazEJMo9k4xKG3YuIETDAeT3rNeD04sl7YxoKDrJPpcZZJK4xXyQKEscI_AGi2KlKyhEFFbE3romx3cjlmFRdIu6iao2xZlKp1i167xThBN1aUFtHKh2h37ysQw9pwIgeb2r1VOUqxbnMfEkZxiJZErizKFmRJBFoBX7iEvAXE2qJEjfE8n2u9IKJAS-rArPA7dN36vbxoSrbtc3hfX89-vPi0ufy8hbvp_cNTd9M7pGY0zKeJG7SzonGKZ1Psvlnw9BcAAAD__w.byB4QqSYT2mv5_eTfGdk2_Y8tbuzXM3x1Tsrbl22UWz2-I0_QCZgbueCpnn2kYYZblCw03zUJtDNe76ola8inw')
     }
-    next()
-  },
-  created: function () {
     getUserInfo().then(res => {
       this.user = res
+      window.webStorage.setItem('userInfo', JSON.stringify(this.user))
+      next()
     })
   },
   mounted: function () {

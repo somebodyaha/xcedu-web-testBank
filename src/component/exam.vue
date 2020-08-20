@@ -279,7 +279,7 @@ export default {
         return
       }
       if (!PATH) {
-        const userStr = window.localStorage.getItem('user')
+        const userStr = window.webStorage.getItem('userInfo')
         PATH = userStr && JSON.parse(userStr).domainId + '/exam/'
       }
       const id = uuidv4().replace(/-/g, '')

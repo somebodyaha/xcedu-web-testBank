@@ -1,8 +1,8 @@
 <template>
   <section class="app-testBank-detail">
     <div class="app-testBank-header">
-      <logo />
-      <user />
+      <Logo />
+      <User />
     </div>
     <div class="app-testBank-detail-content">
       <div class="test-bank-section">
@@ -58,12 +58,9 @@
 <script>
 // import json2 from '@/json/json2.json'
 import { getBankInfoById, loadDetailBatchByIdsEx } from '@/api/index'
-import logo from '@/component/logo'
-import user from '@/component/user'
 import { arrayToStrWithOutComma, downloadAttachment } from '../util/index'
 
 export default {
-  components: { user, logo },
   data () {
     return {
       bankInfo: '',

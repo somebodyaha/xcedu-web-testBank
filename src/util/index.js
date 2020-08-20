@@ -18,7 +18,7 @@ export function downloadFile (res) {
   }
   var elemIF = document.createElement('iframe')
   elemIF.style.display = 'none'
-  elemIF.src = '/api/v1/api-base/attachments/downloadZip?fileListBase64=' + res + '&access_token=' + localStorage.getItem('token')
+  elemIF.src = '/api/v1/api-base/attachments/downloadZip?fileListBase64=' + res + '&access_token=' + window.webStorage.getItem('token')
   document.body.appendChild(elemIF)
   setTimeout(() => {
     document.body.removeChild(elemIF)
