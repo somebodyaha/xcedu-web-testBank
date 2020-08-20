@@ -241,9 +241,11 @@ export default {
       // window.webStorage.setItem('token', 'eyJhbGciOiJIUzUxMiIsInppcCI6IkRFRiJ9.eNqUU81u1DAQfpecvZWT7E-yt4oTUuHEC9jxJGs2sSP_dJNFSIA4ckGIA7dy4VYJwaUtIF6m28JbYCeb3S5wgEiRZz5_M54Zf34SPDY8mAdxRHE4nbBRnkZ0NKY4HpEcZiNGYzpN6ISlUxygQFvqyAkh8Ww6TqYM05TOEhfJwhjnk5xRjGPiiFxrR6xamec8g7okBkZGLkGMNKhTUJ5CTDAPJ-kEx2mcpCiApt4CSTTxgFTFiRTFQ1KBS7a5_P7zzfPri2fXF-dHt---XV-9vjl7v3l1dXTz9uPm_MPtl5dBF7Pl30Uzqer7zIG-iRpUdU8y8BVmJdFaAYg5xiHqquWknGswfwdoXc0rIkgBqvObRf2gc__wIkQYU6D1Cdd9rOaFsPU2vEMW0mouigP7lMOqA4wibZ9NIWhINdjaNQN7Wu96q1CEWTfo7V6IKqlc6VmblT2h93eRvcuIIXtyl7HVBnbHCakqUg4eF7l0HXBh3D-UycVB4b_3vWP8Rw2GV_CI0PJOo3vIe6cgLBxchTtTWpV1215eVdHdeJSlmFCazEJMo9k4xKG3YuIETDAeT3rNeD04sl7YxoKDrJPpcZZJK4xXyQKEscI_AGi2KlKyhEFFbE3romx3cjlmFRdIu6iao2xZlKp1i167xThBN1aUFtHKh2h37ysQw9pwIgeb2r1VOUqxbnMfEkZxiJZErizKFmRJBFoBX7iEvAXE2qJEjfE8n2u9IKJAS-rArPA7dN36vbxoSrbtc3hfX89-vPi0ufy8hbvp_cNTd9M7pGY0zKeJG7SzonGKZ1Psvlnw9BcAAAD__w.byB4QqSYT2mv5_eTfGdk2_Y8tbuzXM3x1Tsrbl22UWz2-I0_QCZgbueCpnn2kYYZblCw03zUJtDNe76ola8inw')
     }
     getUserInfo().then(res => {
-      this.user = res
-      window.webStorage.setItem('userInfo', JSON.stringify(this.user))
-      next()
+      next(vm => {
+        // 通过 `vm` 访问组件实例
+        vm.user = res
+        window.webStorage.setItem('userInfo', JSON.stringify(vm.user))
+      })
     })
   },
   mounted: function () {
